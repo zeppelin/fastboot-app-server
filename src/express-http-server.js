@@ -14,6 +14,7 @@ class ExpressHTTPServer {
     this.username = options.username;
     this.password = options.password;
     this.cache = options.cache;
+    this.cacheExcludePaths = options.cacheExcludePaths;
     this.gzip = options.gzip || false;
     this.host = options.host;
     this.port = options.port;
@@ -70,6 +71,10 @@ class ExpressHTTPServer {
   buildCacheMiddleware() {
     return (req, res, next) => {
       let path = req.path;
+
+      if ((this.cacheExcludePaths || []).some((regex)=> regex.test(path))) {
+        return next();
+      }
 
       Promise.resolve(this.cache.fetch(path, req))
         .then(response => {
