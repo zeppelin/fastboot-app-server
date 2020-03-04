@@ -97,14 +97,16 @@ class ExpressHTTPServer {
     res.send = (body) => {
       let ret = send(body);
 
-      this.cache.put(path, body, res)
-        .then(() => {
-          this.ui.writeLine(`stored in cache; path=${path}`);
-        })
-        .catch(() => {
-          let truncatedBody = body.replace(/\n/g).substr(0, 200);
-          this.ui.writeLine(`error storing cache; path=${path}; body=${truncatedBody}...`);
-        });
+      if (res.statusCode < 300 || res.statusCode >= 400) {
+        this.cache.put(path, body, res)
+          .then(() => {
+            this.ui.writeLine(`stored in cache; path=${path}`);
+          })
+          .catch(() => {
+            let truncatedBody = body.replace(/\n/g).substr(0, 200);
+            this.ui.writeLine(`error storing cache; path=${path}; body=${truncatedBody}...`);
+          });
+      }
 
       res.send = send;
 
